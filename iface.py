@@ -6,7 +6,6 @@ app = Flask(__name__)
 bootstrap=Bootstrap(app)
 
 
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def index():
-	user_agent=request.headers.get('User-Agent')
-	return '<p> Your browser is {} </p>'.format(user_agent)
+	return render_template('base.html')
