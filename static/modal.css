@@ -1,0 +1,15 @@
+.rounded-5 { border-radius: .75rem; }
+
+.modal-sheet .modal-dialog {
+    width: 380px;
+    transition: bottom .75s ease-in-out;
+}
+
+.modal-alert .modal-dialog {
+    width: 380px;
+}
+
+.modal-tour ,.modal-dialog {
+    width: 380px;
+}
+
