@@ -1,16 +1,16 @@
-{% from '_macro.html' import input %}
-<div class="modal fade" id="load-modal" tabindex="-1" aria-labelledby="loadModalLabel" aria-hidden="true">
+<div class="modal fade" id="load-modal" tabindex="1" aria-labelledby="loadModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="loadModalLabel">IMPORT DATA</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body mb-3">
           {{ modal_messages() }}
-          <form method="POST" novalidate>
+          <form method="POST" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
-            {{ input(form.data) }}
+            {{ form.data.label(class="form-label") }} 
+            {{ form.data(id="FileToupLoad",class="form-control")}}<br>
             {{ form.submit(class_='btn btn-primary') }}
           </form>
         </div>
