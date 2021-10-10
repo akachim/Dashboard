@@ -1,17 +1,19 @@
-{% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-{% block body %}
-<div class="modal modal-signin position-static d-block bg-seconday py-5" tabindex="-1" role="dialog" id="modalSignin">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content rounded-5 shadow">
-            <div class="modal-header p-5 pb-4 border-bottom-0">
-                <h2 class="fw-bold mb-0">Upload Data</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"></button>
-            </div>
-            <form class="">
-               {{wtf.quick_form(form)}} 
-            </form>
+{% from '_macro.html' import input %}
+<div class="modal fade" id="load-modal" tabindex="-1" aria-labelledby="loadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="loadModalLabel">IMPORT DATA</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        <div class="modal-body">
+          {{ modal_messages() }}
+          <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            {{ input(form.data) }}
+            {{ form.submit(class_='btn btn-primary') }}
+          </form>
+        </div>
+      </div>
     </div>
-</div>
-{% endblock %}
+  </div>
