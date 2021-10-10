@@ -1,12 +1,16 @@
-<!doctype html>
-<html>
- <body>
-  <h1>Hello Plotly (but not Dash)</h1>
-  <div id="chart" class="chart"></div>
-</body>
+{% extends "base.html" %}
+{% block contents %}
+<div class="page-header text-centre">
+    <h1>Hello Plotly (but not Dash)</h1>
+</div>
+<canvas class="my-4 w-100" id="chart" width="900" height="380"></canvas>
+{% block script %}
+  {{ super() }}
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script type="text/javascript">
-  var graphs = {{graphJSON | safe}};
+  var graphs = {{ graphJSON | safe }};
   Plotly.plot('chart',graphs,{});
 </script>
-</html>
+{% endblock %}
+
+{% endblock %}

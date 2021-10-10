@@ -7,9 +7,9 @@
         </div>
         <div class="modal-body mb-3">
           {{ modal_messages() }}
-          <form method="POST" enctype="multipart/form-data">
+          <form class="form-control" method="POST" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
-            {{ form.data(id="FileToupLoad",class="form-control")}}<br>
+            {{ form.data(name="fileupload", id="fileToupload")}}<br>
             {{ form.submit(class_='btn btn-primary') }}
           </form>
         </div>

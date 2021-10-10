@@ -34,19 +34,15 @@ class FileForm(FlaskForm):
 def index():
 	form = FileForm()
 	if request.method == 'POST':
-		if form.validate_on_submit():
-			try:
-				f = request.files['fileupload']
-				#store the file contents as a string
-				fstring = f.read()
-				#create list of dictionaries keyed by header row
-				csv_dicts = [{k: v for k, v in row.items()} for row in csv.DictReader(fstring.splitlines(), skipinitialspace=True)]
-				df = pd.DataFrame(csv_dicts)
-				fig = px.bar(df, x="Fruit", y="Amount", color="City",    barmode="group")
-				graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-				return render_template_modal('results.html',
-                                form=form, graphJSON=graphJSON, modal=None)
-			except FileNotFoundError as e:
-				return e
+		f = request.files['fileupload']
+		#store the file contents as a string
+		fstring = f.read()
+		#create list of dictionaries keyed by header row
+		csv_dicts = [{k: v for k, v in row.items()} for row in csv.DictReader(fstring.splitlines(), skipinitialspace=True)]
+		df = pd.DataFrame(csv_dicts)
+		fig = px.bar(df, x="Fruit", y="Amount", color="City",    barmode="group")
+		graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
+		return render_template_modal('results.html',
+						form=form, graphJSON=graphJSON, modal=None)
 	return render_template_modal('index.html', form=form, modal='modal-form')
