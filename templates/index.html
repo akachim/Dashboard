@@ -7,7 +7,11 @@
       <div class="btn-group me-2">
         <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
         <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+        data-bs-target="#load-modal">Import</button>
+      </div>
+      <div class="text-body">
+        {% include 'load.html' %}
       </div>
     </div>
   </div>
