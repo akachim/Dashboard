@@ -6,7 +6,7 @@ from wtforms import FileField, SubmitField
 from wtforms.validators import DataRequired
 from flask_modals import Modal
 from flask_modals import render_template_modal
-import csv
+#import csv
 import pandas as pd
 import json
 import plotly
@@ -33,16 +33,17 @@ class FileForm(FlaskForm):
 @app.route('/', methods=['GET','POST'])
 def index():
 	form = FileForm()
-	if request.method == 'POST':
-		f = request.files['fileupload']
-		#store the file contents as a string
-		fstring = f.read()
-		#create list of dictionaries keyed by header row
-		csv_dicts = [{k: v for k, v in row.items()} for row in csv.DictReader(fstring.splitlines(), skipinitialspace=True)]
-		df = pd.DataFrame(csv_dicts)
-		fig = px.bar(df, x="Fruit", y="Amount", color="City",    barmode="group")
-		graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+	if request.method=="POST":
+		if form.validate_on_submit():
+			f = request.files['data']
+			#store the file contents as a string
+			#fstring = f.read()
+			#create list of dictionaries keyed by header row
+			#csv_dicts = [{k: v for k, v in row.items()} for row in csv.DictReader(fstring.splitlines(), skipinitialspace=True)]
+			df = pd.read_csv(f)
+			fig = px.line(df, x="fruits", y="amount", title="Fruits vs amount")
+			graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+			
+			return render_template('index.html', form=form, graphJSON=graphJSON, modal=None)
 
-		return render_template_modal('results.html',
-						form=form, graphJSON=graphJSON, modal=None)
 	return render_template_modal('index.html', form=form, modal='modal-form')

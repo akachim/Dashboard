@@ -1,4 +1,4 @@
-<div class="modal fade" id="load-modal" tabindex="1" aria-labelledby="loadModalLabel" aria-hidden="true">
+<div class="modal fade" id="load-modal" tabindex="-1" aria-labelledby="loadModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -7,10 +7,10 @@
         </div>
         <div class="modal-body mb-3">
           {{ modal_messages() }}
-          <form class="form-control" method="POST" enctype="multipart/form-data">
+          <form method="POST" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
-            {{ form.data(name="fileupload", id="fileToupload")}}<br>
-            {{ form.submit(class_='btn btn-primary') }}
+            {{ form.data(id="fileToupload", class="form-control" )}}<br>
+            {{ form.submit(class_='btn btn-primary shadow') }}
           </form>
         </div>
       </div>
