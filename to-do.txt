@@ -1,0 +1,9 @@
+Create a dash board
+create form
+validate form content and extension
+create a modal
+build machine learning prediction model
+plot the results
+create 
+create a database model for accessing previous plots and predicitons
+create a user authentication system

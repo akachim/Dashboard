@@ -21,7 +21,6 @@ app.config["SECRET_KEY"]="oh well i hope it works this time"
 bootstrap=Bootstrap(app)
 modal=Modal(app)
 
-BOOTSTRAP_SERVE_LOCAL=True
 #--------------forms---------------------------
 class FileForm(FlaskForm):
 	data=FileField(validators=[DataRequired()])
@@ -36,14 +35,14 @@ def index():
 	if request.method=="POST":
 		if form.validate_on_submit():
 			f = request.files['data']
+			flash("Submitted succefully",'info')
 			#store the file contents as a string
 			#fstring = f.read()
 			#create list of dictionaries keyed by header row
 			#csv_dicts = [{k: v for k, v in row.items()} for row in csv.DictReader(fstring.splitlines(), skipinitialspace=True)]
 			df = pd.read_csv(f)
-			fig = px.line(df, x="fruits", y="amount", title="Fruits vs amount")
+			fig = px.line(df, x="Days", y="Patients", title="DAYS VS NUMBER OF PATIENTS")
 			graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-			
-			return render_template('index.html', form=form, graphJSON=graphJSON, modal=None)
+			return render_template('result.html', form=form, graphJSON=graphJSON, modal=None)
 
 	return render_template_modal('index.html', form=form, modal='modal-form')
