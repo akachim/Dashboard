@@ -17,8 +17,12 @@ import pandas as pd
 import json
 import plotly
 import plotly.express as px
+import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+from matplotlib import pyplot as plt
 import numpy as np
 
 
@@ -27,8 +31,6 @@ import numpy as np
 app = Flask(__name__)
 app.config["SECRET_KEY"]="oh well i hope it works this time"
 #app.config["MAX_CONTENT_LENGTH"]=1024*1024
-
-#app.config["UPLOAD_EXTENSIONS"]=['.csv', '.xlx', '.xls']
 
 #-------------initializations-----------------------
 bootstrap=Bootstrap(app)
@@ -42,9 +44,11 @@ class FileForm(FlaskForm):
 		])
 	submit=SubmitField("Submit")
 
+
+
 def DataTransform(data):
     """
-    A function that performs data tranformation before apllying to model
+    A function that performs data tranformation before apllying to prediction model
     it takes test data frame as the only argument
     
     """
@@ -63,11 +67,32 @@ def DataTransform(data):
     
     data['class'] = LabelEncoder().fit_transform(data['class'])
     
-    y = data["class"]
+    y_actual = data["class"]
     
-    vals=[processed_df, y]
+    vals=[processed_df, y_actual]
     
     return vals
+
+
+def NetworkClass(y_predicted):
+    """
+    A function that takes the predicted value and returns the predicted categorical value
+    1: normal, 0: anormaly, storing it as dataframe column.
+    """
+    network_class=[]
+    
+    for i in y_predicted:
+        if i ==0:
+            nework_class_cat= "anormaly"
+        elif i ==1:
+            network_class_cat="normal"
+            
+        network_class.append(network_class_cat)
+        
+    network_class=pd.DataFrame(network_class, columns=["network class"])
+    
+    return network_class
+
 #---------views/routes---------------------
 
 @app.route('/', methods=['GET','POST'])
@@ -75,7 +100,20 @@ def index():
     form = FileForm()
     if request.method=="POST":
         if form.validate_on_submit():
+            #Making sure the user selects a model
+            
+            z=request.form.get("models")
+            
+            if z=='lr':
+                model=joblib.load("model_LR.pkl")
+                
+            else:
+                z=='esm'
+                model=joblib.load("model_z.pkl")
+                flash("You selected the Esembling Learning")
+                
             f = request.files['data']
+            
             filename = secure_filename(f.filename)
             
             file_ext=os.path.splitext(filename)[1] #getting the file extension
@@ -84,35 +122,34 @@ def index():
             else:
                 df = pd.read_csv(filename)
             
-            test_data= DataTransform(df)[0]
-            
-            model=joblib.load("model_LR.pkl")
-            
+            test_data= DataTransform(df)[0] #assesing the first value of returned vals in DataTransform function
+            y_actual = DataTransform(df)[1] #assesing the second value of the returned valas in DataTransform
+               
             y_predicted=model.predict(test_data)
             
-            print(y_predicted)
+            #cf_matrix = confusion_matrix(y_actual, y_predicted) #Confusion matrix
+            #ax = sns.heatmap(cf_matrix/np.sum(cf_matrix), annot=True, 
+            #fmt='.2%', cmap='Blues')
+
+            #ax.set_title('Confusion Matrix for Predicted and Actual class\n\n');
+            #ax.set_xlabel('\nPredicted Values')
+            #ax.set_ylabel('Actual Values ');
+
+            ## Ticket labels - List must be in alphabetical order
+            #ax.xaxis.set_ticklabels(['False','True'])
+            #ax.yaxis.set_ticklabels(['False','True'])
+
+            ## Display the visualization of the Confusion Matrix.
+            #plt.show()
+                    
+            network_class= NetworkClass(y_predicted)
             
-            #A loop that determines the class 1:normal, 0:anormaly
-            net_class=[]
-            for i in y_predicted:
-                if i ==0:
-                    net_class_cat= "anormaly"
-                elif i ==1:
-                    net_class_cat="normal"
-                    
-                net_class.append(net_class_cat)
-                
-            net_class=pd.DataFrame(net_class, columns=["network class"])   
-            #print(net_class.head())
-                    
-                    
-            y_act= np.array(DataTransform(df)[1])
+            y_act= np.array(y_actual)
+            y_predicted=np.array(y_predicted)
             y_act=pd.DataFrame(y_act, columns=["actual values"])    
             pred = pd.DataFrame(y_predicted, columns=["Predicted class"])
             
-            new_output = pd.concat([y_act, pred, net_class], axis=1)
-            
-            #print(new_output.head())
+            new_output = pd.concat([y_act, pred, network_class], axis=1)
             
             #result=new_output.to_html()
             
@@ -120,12 +157,14 @@ def index():
             #text_file.write(result)
             #text_file.close()
             
-            fig = px.bar(new_output, x='Predicted class', y='actual values', color="network class", title="Predicted class")
+            #fig = go.Figure(data=go.Heatmap(
+                    #z=[y_predicted, y_act]))
             
-            graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+            #fig = px.imshow(new_output)
             
-            return render_template('result.html', form=form, graphJSON=graphJSON, modal=None)
-            #return render_template('table.html', form=form, modal=None)
+            #graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+            
+            #return render_template('result.html', form=form, graphJSON=graphJSON, modal=None)
     return render_template_modal('index.html', form=form, modal='modal-form')
 
 

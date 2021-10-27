@@ -10,8 +10,15 @@
           <form method="POST" enctype="multipart/form-data"> 
             {{ form.hidden_tag() }}
             {{ form.data(id="fileToupload", class="form-control" )}}<br>
-            {{ form.submit(class_='btn btn-primary shadow') }}
+            {{ form.submit(class='btn btn-primary shadow') }}
           </form>
+          <br>
+          <br>
+          <label for="models">Choose Predicting model</label>
+          <select name="models" id="models" form="fileToupload" required>
+            <option value="lr">Logistic Regression</option>
+            <option value="esm">Esembling Model</option>
+          </select>
         </div>
       </div>
     </div>
