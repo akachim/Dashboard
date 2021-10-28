@@ -23,12 +23,12 @@
       datasets: [{
         data: [
           15339,
-          16345,
+          26345,
           18483,
-          24003,
+          54003,
           23489,
-          24092,
-          25034
+          14092,
+          5034
         ],
         lineTension: 0,
         backgroundColor: 'transparent',

@@ -46,28 +46,29 @@ class FileForm(FlaskForm):
 
 
 
-def DataTransform(data):
+def DataTransform(file):
     """
     A function that performs data tranformation before apllying to prediction model
     it takes test data frame as the only argument
     
     """
-    non_num = data[["protocol_type","service","flag"]]
-    non_num.head()
-    label_encoder = LabelEncoder()
-    non_num['protocol_type'] = label_encoder.fit_transform(non_num['protocol_type'])
-    non_num['service'] = label_encoder.fit_transform(non_num['service'])
-    non_num['flag'] = label_encoder.fit_transform(non_num['flag'])
+    non_numeric = file[["protocol_type","service","flag"]]
     
-    num = data.drop(["protocol_type","service","flag", 'class'], axis=1)
+    label_encoder = LabelEncoder()
+    
+    non_numeric['protocol_type'] = label_encoder.fit_transform(non_numeric['protocol_type'])
+    non_numeric['service'] = label_encoder.fit_transform(non_numeric['service'])
+    non_numeric['flag'] = label_encoder.fit_transform(non_numeric['flag'])
+    
+    num = file.drop(["protocol_type","service","flag", 'class'], axis=1)
     
     num[num.columns]= StandardScaler().fit_transform(num[num.columns])
     
-    processed_df = pd.concat([non_num, num], axis=1)
+    processed_df = pd.concat([non_numeric, num], axis=1)
     
-    data['class'] = LabelEncoder().fit_transform(data['class'])
+    file['class'] = LabelEncoder().fit_transform(file['class'])
     
-    y_actual = data["class"]
+    y_actual = file["class"]
     
     vals=[processed_df, y_actual]
     
@@ -93,81 +94,87 @@ def NetworkClass(y_predicted):
     
     return network_class
 
+                    
+def ToDataFrame(y_actual, y_predicted):
+    """
+    A function that takes the actual values and predicted values
+    converts them to dataframe and concats them with the predicted network class 
+    to return a new dataframe containing the actual, predicted values and the Predicted network class 
+    """
+    network_class= NetworkClass(y_predicted)
+    
+    y_act= np.array(y_actual)
+    
+    y_predicted=np.array(y_predicted)
+    
+    y_act=pd.DataFrame(y_act, columns=["actual values"])
+    
+    pred = pd.DataFrame(y_predicted, columns=["Predicted class"])
+    
+    new_dataframe = pd.concat([y_act, pred, network_class], axis=1)
+    
+    return new_dataframe
+
+
 #---------views/routes---------------------
+
+
 
 @app.route('/', methods=['GET','POST'])
 def index():
-    form = FileForm()
+    
+    form=FileForm()
+    
     if request.method=="POST":
-        if form.validate_on_submit():
-            #Making sure the user selects a model
-            
-            z=request.form.get("models")
-            
-            if z=='lr':
+        
+        if form.validate_on_submit(): 
+            mod=request.form.get("models")
+            if mod=='lr':
                 model=joblib.load("model_LR.pkl")
-                
+                mod='Logistic regression'
             else:
-                z=='esm'
-                model=joblib.load("model_z.pkl")
-                flash("You selected the Esembling Learning")
-                
+                mod=='esm'
+                model=joblib.load('model_z.pkl')
+                mod='Esembling Learning'
+                        
             f = request.files['data']
-            
+                    
             filename = secure_filename(f.filename)
-            
+                    
             file_ext=os.path.splitext(filename)[1] #getting the file extension
             if file_ext in ['xlx','xlsx', 'xls']:
-                df = pd.read_excel(filename)
+                    df = pd.read_excel(filename)
             else:
                 df = pd.read_csv(filename)
-            
+                    
             test_data= DataTransform(df)[0] #assesing the first value of returned vals in DataTransform function
+            
             y_actual = DataTransform(df)[1] #assesing the second value of the returned valas in DataTransform
-               
+            
+                    
             y_predicted=model.predict(test_data)
             
-            #cf_matrix = confusion_matrix(y_actual, y_predicted) #Confusion matrix
-            #ax = sns.heatmap(cf_matrix/np.sum(cf_matrix), annot=True, 
-            #fmt='.2%', cmap='Blues')
+            
+            cm=confusion_matrix(y_actual, y_predicted)
+            print(cm)
 
-            #ax.set_title('Confusion Matrix for Predicted and Actual class\n\n');
-            #ax.set_xlabel('\nPredicted Values')
-            #ax.set_ylabel('Actual Values ');
-
-            ## Ticket labels - List must be in alphabetical order
-            #ax.xaxis.set_ticklabels(['False','True'])
-            #ax.yaxis.set_ticklabels(['False','True'])
-
-            ## Display the visualization of the Confusion Matrix.
-            #plt.show()
-                    
-            network_class= NetworkClass(y_predicted)
-            
-            y_act= np.array(y_actual)
-            y_predicted=np.array(y_predicted)
-            y_act=pd.DataFrame(y_act, columns=["actual values"])    
-            pred = pd.DataFrame(y_predicted, columns=["Predicted class"])
-            
-            new_output = pd.concat([y_act, pred, network_class], axis=1)
-            
-            #result=new_output.to_html()
-            
-            #text_file = open("templates/table.html", "w")
-            #text_file.write(result)
-            #text_file.close()
-            
-            #fig = go.Figure(data=go.Heatmap(
-                    #z=[y_predicted, y_act]))
-            
-            #fig = px.imshow(new_output)
+            lm=cm.tolist()
+                            
+            #fig = go.Figure(data=go.Heatmap(z=[y_predicted, y_actual]))
             
             #graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
             
-            #return render_template('result.html', form=form, graphJSON=graphJSON, modal=None)
-    return render_template_modal('index.html', form=form, modal='modal-form')
+            flash("You selected the {} model".format(mod), 'info')
+            
+            return render_template_modal('result_js.html',lm=lm,form=form, modal=None)
+    
+    return render_template_modal('index.html',form=form, modal='modal-form')
 
+@app.route('/predict', methods=["GET", "POST"])
 
+def predict():
+    
+    return render_template('result_js.html')
 
 @app.errorhandler(413)
 def too_large(e):

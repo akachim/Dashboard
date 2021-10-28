@@ -9,7 +9,14 @@
 
 {% block scripts %}
   <script>
-    var graphs = {{graphJSON | safe}};
-    Plotly.plot('chart',graphs,{});
+   var data = [
+    {
+      z: {{ lm | safe }},
+      type: 'heatmap'
+    }
+  ];
+
+Plotly.newPlot('chart', data, {} );
+
   </script>
 {% endblock %}
