@@ -14,24 +14,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">   
 <!---modals--->
   {{ modals() }}
-
-    <style>
-      .bd-placeholder-img {
-        font-size: 1.125rem;
-        text-anchor: middle;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        user-select: none;
-      }
-
-      @media (min-width: 768px) {
-        .bd-placeholder-img-lg {
-          font-size: 3.5rem;
-        }
-      }
-    </style>
-
-    
     <!-- Custom styles for this template -->
     <link href="/static/dashboard.css" rel="stylesheet">
     <link href="/static/modal.css" rel="stylesheet">
@@ -60,20 +42,28 @@
                 Reports
               </a>
             </li>
+            <li>
+              <a class="nav-link" href="{{ url_for('download')}}">
+                <span data-feather="download"></span>
+                Export
+              </a>
+            </li>
           </ul>
         </div>
       </nav>
     </div>
     <div class="container">
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      {% for category, message in messages %}
+      <div class="row">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
         <div class="alert alert-{{ category }}">{{ message }}</div>
-      {% endfor %}
-      {% endif %}
-      {% endwith %}
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+      </div>
       {% block contents %}{% endblock %}
-    </div>
+    </div> 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj"
