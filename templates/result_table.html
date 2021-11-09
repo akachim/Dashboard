@@ -1,0 +1,14 @@
+{% extends "base.html" %}}
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="/static/table.css"/>
+{% endblock %}
+{% block contents %}
+<div class="table-responsive border-bottom d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+    {% include 'table.html' %}
+</div>
+    {% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" 
+    integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" 
+    crossorigin="anonymous"></script>
+    {% endblock %}
+{% endblock %}

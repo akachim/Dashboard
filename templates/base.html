@@ -17,27 +17,25 @@
     <!-- Custom styles for this template -->
     <link href="/static/dashboard.css" rel="stylesheet">
     <link href="/static/modal.css" rel="stylesheet">
+    {% block style %}{% endblock %}
 </head>
 <body>
-  <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
-    <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="/">iFace</a>
-    <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-  </header>
-  <div class="container">
-    <div class="row">
-      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-        <div class="position-sticky pt-3">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="/">
+  <header>
+    <div class="px-3 py-2 bg-dark text-white">
+      <div class="container-fluid">
+        <div class="d-flex flex-wrap align-items-center justify-content justify-content-lg-start">
+          <a href="/" class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-white text-decoration-none">
+            iFace
+          </a>
+          <ul class="nav col-12 col-lg-auto my-2 justify-content-center my-md-0 text-medium">
+            <li>
+              <a class="nav-link active text-secondary" aria-current="page" href="/">
                 <span data-feather="home"></span>
-                Dashboard
+                Home
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('predict') }}">
+            <li>
+              <a class="nav-link text-white" href="{{ url_for('predict') }}">
                 <span data-feather="bar-chart-2"></span>
                 Reports
               </a>
@@ -50,9 +48,10 @@
             </li>
           </ul>
         </div>
-      </nav>
+      </div>
     </div>
-    <div class="container">
+  </header>
+    <div class="container-fluid">
       <div class="row">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -77,6 +76,6 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="/static/assets/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
+  {% block scripts %}{% endblock %}
 </body>
-{% block scripts %}{% endblock %}
 </html>

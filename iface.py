@@ -1,12 +1,11 @@
 import os
-from flask import Flask, render_template, redirect, flash, session, request
+from flask import Flask, render_template, redirect, flash, request
 from flask.helpers import url_for
 from flask_bootstrap import Bootstrap 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from pandas.core.frame import DataFrame
 from werkzeug.datastructures import FileStorage
-from wtforms import SubmitField
+from wtforms import SubmitField, SelectField
 from flask_modals import Modal
 from flask_modals import render_template_modal
 from werkzeug.utils import secure_filename
@@ -14,11 +13,7 @@ from werkzeug.utils import secure_filename
 #-----Data analysis modules
 import joblib
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import confusion_matrix
 import numpy as np
-from wtforms.fields.core import SelectField
 from wtforms.validators import DataRequired
 
 
@@ -40,111 +35,53 @@ class FileForm(FlaskForm):
 		])
     model=SelectField(label="Choose Model",
                         choices=[
-                            ('esm', 'Essembly Learning'),
-                            ('lr', 'Logistic regression')
+                            ('bnb','Bernoulli Classifier'),
+                            ('clf','Support Vector Classifier'),
+                            ('dtc', 'Decision Tree'),
+                            ('lgr', 'Logistic Regression'),
+                            ('knn', 'K Nearest Neighbour'),
+                            ('lr','Linear Regression')
                             ], 
                             validators=[DataRequired()])
-    dataset=SelectField(label="Select data set type", 
-                        choices=[
-                            ("tr", "Training data"),
-                            ("ts","Test data")
-                        ],validators=[DataRequired()])
-
     submit=SubmitField("Submit")
-
-
-
-def DataTransform(file):
-    """
-    A function that performs data tranformation before apllying to prediction model
-    it takes test data frame as the only argument
-    
-    """
-    non_numeric = file[["protocol_type","service","flag"]]
-    
-    label_encoder = LabelEncoder()
-    
-    non_numeric['protocol_type'] = label_encoder.fit_transform(non_numeric['protocol_type'])
-    non_numeric['service'] = label_encoder.fit_transform(non_numeric['service'])
-    non_numeric['flag'] = label_encoder.fit_transform(non_numeric['flag'])
-
-    num = file.drop(["protocol_type","service","flag", 'class'], axis=1)
-    file['class'] = LabelEncoder().fit_transform(file['class'])
-    y_actual = file["class"]
-    num[num.columns]= StandardScaler().fit_transform(num[num.columns])
-
-    processed_df = pd.concat([non_numeric, num], axis=1)
-
-    vals=[processed_df, y_actual]
-
-    
-    return vals
-
-
-def NetworkClass(y_predicted):
-    """
-    A function that takes the predicted value and returns the predicted categorical value
-    1: normal, 0: anormaly, storing it as dataframe column.
-    """
-    network_class=[]
-    
-    for i in y_predicted:
-        if i==0:
-            network_class_cat= "anormaly"
-        elif i==1:
-            network_class_cat="normal"
-            
-        network_class.append(network_class_cat)
-        
-    network_class=pd.DataFrame(network_class, columns=["network class"])
-    
-    return network_class
-
-                    
-def ToDataFrame(y_actual, y_predicted):
-    """
-    A function that takes the actual values and predicted values
-    converts them to dataframe and concats them with the predicted network class 
-    to return a new dataframe containing the actual, predicted values and the Predicted network class 
-    """
-    network_class= NetworkClass(y_predicted)
-    
-    y_act= np.array(y_actual)
-    
-    y_predicted=np.array(y_predicted)
-    
-    y_act=pd.DataFrame(y_act, columns=["actual values"])
-    
-    pred = pd.DataFrame(y_predicted, columns=["Predicted class"])
-    
-    new_dataframe = pd.concat([y_act, pred, network_class], axis=1)
-    
-    return new_dataframe
-
-def to_lm(cm):
-    lm= cm.tolist()
-
-    return lm
-#---------views/routes---------------------
-
 
 
 @app.route('/', methods=['GET','POST'])
 def index():
     
     form=FileForm()
-    
+    models=['bnb','clf','dtc','knn','lgr','lr']
     if request.method=="POST":
         
         if form.validate_on_submit():
             mod=form.model.data
-            if mod=='lr':
-                model=joblib.load("model_LR.pkl")
-                mod='Logistic regression'
+            if mod=='bnb':
+                mod="Bernoulli Classifier"
+                model=joblib.load('model_BNB.pkl')
+
+            elif mod=='clf':
+                mod='Support Vector Classifier'
+                model=joblib.load('model_clf.pkl')
+
+            elif mod=='dtc':
+                mod='Decision Tree'
+                model=joblib.load('model_DTC.pkl')
+
+            elif mod=='knn':
+                mod='K Nearest Neighbour'
+                model=joblib.load('model_knn.pkl')
+
+            elif mod=='lgr':
+                mod='Logistic Regression'
+                model=joblib.load('model_LGR.pkl')
+
+            elif mod=='lr':
+                mod='Linear Regression'
+                model=joblib.load('model_LR2.pkl')
+
             else:
-                mod=='esm'
-                model=joblib.load('model_z.pkl')
-                mod='Esembling Learning'
+                flash('Model does not exist', 'error')
+                return redirect(url_for('index'))
                         
             f = request.files['data']
 
@@ -156,28 +93,26 @@ def index():
             else:
                 
                 df = pd.read_csv(filename)
-            
-            dat=form.dataset.data
 
-            test_data= DataTransform(df)[0] #assesing the first value of returned vals in DataTransform function
+            test_data=df
+            y_predicted=model.predict(test_data) #assesing the first value of returned vals in DataTransform function
 
-            global y_actual
-            y_actual = DataTransform(df)[1] #assesing the second value of the returned valas in DataTransform
-            
-            global y_predicted      
-            y_predicted=model.predict(test_data)
-            
-            global cm
-            cm=confusion_matrix(y_actual, y_predicted)
-            lm=to_lm(cm) #converts the confusion matrix to list
-        
-            #fig = go.Figure(data=go.Heatmap(z=[y_predicted, y_actual]))
-            
-            #graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+            y_pred=np.array(y_predicted)
+            prediction = pd.DataFrame(y_pred, columns=["Prediction"])
+
+            global new_dataframe
+            new_dataframe = pd.concat([prediction, test_data], axis=1)
+            table=new_dataframe.head(10)
+            html = table.to_html(classes='mystyle')
+            # write html to file
+            text_file = open("templates/table.html", "w",  encoding="utf8")
+            text_file.write(html)
+            text_file.close()
+
             
             flash("You selected the {} model".format(mod), 'info')
             
-            return render_template_modal('result_js.html',lm=lm,form=form, modal=None)
+            return render_template_modal('result_table.html',form=form, modal=None)
     
     return render_template_modal('index.html',form=form, modal='modal-form')
 
@@ -185,17 +120,26 @@ def index():
 
 @app.route('/predict', methods=["GET", "POST"])
 def predict():
-    lm=to_lm(cm)
-    return render_template('result_js.html',lm=lm)
+    try:
+        table=new_dataframe.head(20)
+        html = table.to_html(classes='mystyle')
+        # write html to file
+        text_file = open("templates/table.html", "w")
+        text_file.write(html)
+        text_file.close()
+    except:
+        flash("You have to make a Prediction First",'danger')
+        return redirect(url_for('index'))
+    
+    return render_template('result_table.html')
 
 @app.route('/download', methods=["GET","POST"])
 def download():
     try:
-        prediction=ToDataFrame(y_actual, y_predicted)
-        prediction.to_csv("predicted_values.csv")
+        new_dataframe.to_csv("Results.csv")
         flash("File saved successfully", 'info')
         return redirect(url_for('index'))
 
     except:
-        flash("File could not be saved, try Again", 'warning')
+        flash("File could not be saved or you have not made a prediction yet, try Again", 'warning')
     return redirect(url_for('index'))
