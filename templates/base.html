@@ -35,7 +35,7 @@
               </a>
             </li>
             <li>
-              <a class="nav-link text-white" href="{{ url_for('predict') }}">
+              <a class="nav-link text-white" href="{{ url_for('reports') }}">
                 <span data-feather="bar-chart-2"></span>
                 Reports
               </a>
@@ -44,6 +44,12 @@
               <a class="nav-link" href="{{ url_for('download')}}">
                 <span data-feather="download"></span>
                 Export
+              </a>
+            </li>
+            <li>
+              <a class="nav-link" href="{{ url_for('detail')}}">
+                <span data-feather="activity"></span>
+                Model Analysis
               </a>
             </li>
           </ul>
